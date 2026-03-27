@@ -11,7 +11,7 @@ rootpw="root"
 # Only for mkosi v14 and before. v15 and above use "systemd-repart" instead,
 # see mkosi documentation and https://github.com/pmem/run_qemu/issues/88
 rootfssize="10G"
-espsize="512M"
+espsize="4G"
 
 nvme_size="1G"
 efi_mem_size="2"   #in GiB
