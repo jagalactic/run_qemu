@@ -623,7 +623,7 @@ install_build_initrd()
 		--add "bash systemd kernel-modules fs-lib" \
 		--omit "iscsi fcoe fcoe-uefi multipath" \
 		--omit-drivers "nfit libnvdimm nd_pmem" \
-		"$inst_path/initramfs-$kver.img" || {
+		"$builddir/initramfs-$kver.img" || {
 	    ret=$?
 	    _dracut_106_warning
 	    }
@@ -705,7 +705,7 @@ __build_kernel()
 		install_build_initrd
 	fi
 
-	initrd="mkosi.extra/boot/initramfs-$kver.img"
+	initrd="$builddir/initramfs-$kver.img"
 }
 
 build_kernel()
@@ -1819,13 +1819,13 @@ prepare_qcmd()
 	fi
 
 	# if a kver was specified, try to use the same initrd
-	if [ -n "$kver" ] && [ -e "mkosi.extra/boot/initramfs-$kver.img" ]; then
-		initrd="mkosi.extra/boot/initramfs-$kver.img"
+	if [ -n "$kver" ] && [ -e "initramfs-$kver.img" ]; then
+		initrd="initramfs-$kver.img"
 	fi
 
 	# if initrd still hasn't been determined, attempt to use a previous one
-	if [ -z "$initrd" ] && [ -d mkosi.extra/boot ]; then
-		initrd=$(find "mkosi.extra/boot" -name "initramfs*" -print | head -1)
+	if [ -z "$initrd" ]; then
+		initrd=$(find . -maxdepth 1 -name "initramfs*.img" -print | head -1)
 	fi
 
 	# a 'node' implies a 'mem' attached to it
