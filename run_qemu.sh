@@ -21,6 +21,9 @@ pmem_label_size=2  #in MiB
 pmem_final_size="$((pmem_size + pmem_label_size))"
 : "${gdb:=gdb}"
 : "${ndctl:=$(readlink -e ~/git/ndctl)}"
+# Optional famfs source tree to copy into the guest at /root/famfs (built in
+# the guest by the consumer's --autorun). Empty = disabled.
+: "${famfs:=}"
 selftests_home=root/built-selftests
 : "${mkosi_bin:=mkosi}"
 mkosi_opts=("-i" "-f")
@@ -1424,6 +1427,16 @@ make_rootfs()
 			rsync "${rsync_opts[@]}" "$ndctl/" mkosi.extra/root/ndctl
 			prepare_ndctl_build # create mkosi.postinst which compiles
 		fi
+	fi
+
+	# Optional: copy a famfs source tree into the guest at /root/famfs. Built
+	# in the guest by the consumer's --autorun (no chroot postinst). Exclude
+	# build/output dirs so the guest rebuilds clean (the source, incl. famfs's
+	# subrepos, still comes along).
+	if [ -n "$famfs" ]; then
+		rsync "${rsync_opts[@]}" \
+			--exclude=debug/ --exclude=coverage/ --exclude='*.log' \
+			"$famfs/" mkosi.extra/root/famfs
 	fi
 
 	case "$_distro" in
