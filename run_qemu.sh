@@ -58,8 +58,8 @@ cross_pmem_dist=28
 
 # CXL device params
 cxl_addr="0x4c00000000"
-cxl_backend_size="512M"
-cxl_t3_size="256M"
+: "${cxl_backend_size:=512M}"
+: "${cxl_t3_size:=256M}"
 cxl_label_size="128K"
 
 num_build_cpus="$(($(getconf _NPROCESSORS_ONLN) + 1))"
