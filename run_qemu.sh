@@ -24,6 +24,12 @@ pmem_final_size="$((pmem_size + pmem_label_size))"
 # Optional famfs source tree to copy into the guest at /root/famfs (built in
 # the guest by the consumer's --autorun). Empty = disabled.
 : "${famfs:=}"
+# Optional extra guest source trees, as a space-separated list of "label=path"
+# pairs. Each <path> is rsync'd to the guest at /root/<label>, to be built and
+# tested by the consumer's --autorun. Same idea as famfs= but repeatable, e.g.
+# to test several source variants (say, multiple ndctl versions) in one boot.
+# Empty = disabled.
+: "${guest_srcs:=}"
 selftests_home=root/built-selftests
 : "${mkosi_bin:=mkosi}"
 mkosi_opts=("-i" "-f")
@@ -1438,6 +1444,19 @@ make_rootfs()
 			--exclude=debug/ --exclude=coverage/ --exclude='*.log' \
 			"$famfs/" mkosi.extra/root/famfs
 	fi
+
+	# Optional: extra labeled source trees (guest_srcs="label=path ..."), each
+	# rsync'd to /root/<label> for the consumer's --autorun to build+test. Like
+	# famfs= but repeatable (e.g. several ndctl versions tested in one boot).
+	for _spec in $guest_srcs; do
+		_label="${_spec%%=*}"
+		_path="${_spec#*=}"
+		if [ -z "$_label" ] || [ "$_label" = "$_spec" ] || [ ! -d "$_path" ]; then
+			fail 'guest_srcs entry "%s" is not label=/valid/dir\n' "$_spec"
+		fi
+		rsync "${rsync_opts[@]}" --exclude='*.log' \
+			"$_path/" "mkosi.extra/root/$_label"
+	done
 
 	case "$_distro" in
 	    debian|ubuntu)
